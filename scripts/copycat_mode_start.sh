@@ -5,6 +5,7 @@ CURRENT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 SUPPORTED_VERSION="1.9"
 
 PATTERN="$1"
+FILTER="$2"
 
 supported_tmux_version_ok() {
 	$CURRENT_DIR/check_tmux_version.sh "$SUPPORTED_VERSION"
@@ -12,10 +13,11 @@ supported_tmux_version_ok() {
 
 main() {
 	local pattern="$1"
+	local filter="$2"
 	if supported_tmux_version_ok; then
-		$CURRENT_DIR/copycat_generate_results.sh "$pattern" # will `exit 0` if no results
+		$CURRENT_DIR/copycat_generate_results.sh "$pattern" "$filter" # will `exit 0` if no results
 		$CURRENT_DIR/copycat_mode_bindings.sh
 		$CURRENT_DIR/copycat_jump.sh 'next'
 	fi
 }
-main "$PATTERN"
+main "$PATTERN" "$FILTER"

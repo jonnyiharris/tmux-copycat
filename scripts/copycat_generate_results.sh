@@ -4,7 +4,8 @@ CURRENT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 source "$CURRENT_DIR/helpers.sh"
 
-search_pattern="$1"
+PATTERN="$1"
+FILTER="$2"
 
 capture_pane() {
 	local file=$1
@@ -17,7 +18,8 @@ reverse_and_create_copycat_file() {
 	local file=$1
 	local copycat_file=$2
 	local grep_pattern=$3
-	(tac 2>/dev/null || tail -r) < "$file" | grep -oniE "$grep_pattern" > "$copycat_file"
+	local grep_filter=$4
+	(tac 2>/dev/null || tail -r) < "$file" | grep -oniE "$grep_pattern" | grep -Fi "$grep_filter" > "$copycat_file"
 }
 
 delete_old_files() {
@@ -28,11 +30,12 @@ delete_old_files() {
 
 generate_copycat_file() {
 	local grep_pattern="$1"
+	local grep_filter="$2"
 	local scrollback_filename="$(get_scrollback_filename)"
 	local copycat_filename="$(get_copycat_filename)"
 	mkdir -p "$(_get_tmp_dir)"
 	capture_pane "$scrollback_filename"
-	reverse_and_create_copycat_file "$scrollback_filename" "$copycat_filename" "$grep_pattern"
+	reverse_and_create_copycat_file "$scrollback_filename" "$copycat_filename" "$grep_pattern" "$grep_filter"
 }
 
 if_no_results_exit_with_message() {
@@ -46,12 +49,13 @@ if_no_results_exit_with_message() {
 
 main() {
 	local grep_pattern="$1"
+	local grep_filter="$2"
 	if not_in_copycat_mode; then
 		delete_old_files
-		generate_copycat_file "$grep_pattern"
+		generate_copycat_file "$grep_pattern" "$grep_filter"
 		if_no_results_exit_with_message
 		set_copycat_mode
 		copycat_increase_counter
 	fi
 }
-main "$search_pattern"
+main "$PATTERN" "$FILTER"
